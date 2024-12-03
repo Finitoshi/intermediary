@@ -13,15 +13,16 @@ app = FastAPI()
 # Directly access environment variables
 HF_TOKEN = os.getenv("HF_TOKEN")
 MONGO_URI = os.getenv("MONGO_URI")
-PORT = int(os.getenv("PORT", 8000))  # Default to 8
+PORT = int(os.getenv("PORT", 8000))  # Default to 8000 if PORT is not set
+HUGGINGFACE_SPACE_URL = os.getenv("HUGGINGFACE_SPACE_URL")
 
-app = FastAPI()
+# Connect to MongoDB
+mongo_client = MongoClient(MONGO_URI)
+db = mongo_client['bot_db']
+image_collection = db['images']
 
-# Connect to our digital art gallery
-mongo_client = connect_to_mongo(MONGO_URI)
-
-# Fire up the image wizard
-gradio_client = setup_gradio_client(HUGGINGFACE_SPACE_URL.split('/')[-1], HF_TOKEN)  # Use the name from the URL
+# Setup Gradio client
+gradio_client = Client(HUGGINGFACE_SPACE_URL.split('/')[-1], hf_token=HF_TOKEN)
 
 @app.post("/generate_image")
 async def generate_image_endpoint(request: Request):
@@ -31,19 +32,35 @@ async def generate_image_endpoint(request: Request):
         if not prompt:
             return {"status": "error", "message": "No prompt provided, what are we supposed to do, draw blank pages?"}
 
-        # Go fetch that image from the magic land of AI
-        image_data = generate_image(gradio_client, prompt)
-        
-        # Store it for posterity or until the next server restart, whichever comes first
-        store_image(mongo_client, prompt, image_data)
+        # Generate image
+        job = gradio_client.submit(prompt, api_name="/generate")
+        while not job.done():
+            pass  # Wait for job to complete
+        result = job.result()
+
+        # Convert image to base64 for storage
+        if hasattr(result, 'save'):  # If result is an image that can be saved
+            buffered = BytesIO()
+            result.save(buffered, format="PNG")
+            img_str = base64.b64encode(buffered.getvalue()).decode()
+        elif isinstance(result, str):  # If result is already a base64 string or URL
+            img_str = result
+        else:
+            raise ValueError("Unexpected result format from Gradio")
+
+        # Store in MongoDB
+        image_collection.insert_one({
+            "prompt": prompt,
+            "image": img_str,
+            "timestamp": datetime.datetime.utcnow()
+        })
 
         return {"status": "success", "message": "Boom! Image generated and stored like a boss."}
 
     except Exception as e:
-        # Log the error because we're not about to let this fly under the radar
         print(f"Error in our grand image generation plan: {str(e)}")
         return {"status": "error", "message": f"Failed to generate image. AI took a nap: {str(e)}"}
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=PORT)  # Let's start this party on all interfaces, why not?
+    uvicorn.run(app, host="0.0.0.0", port=PORT)
