@@ -22,7 +22,8 @@ db = mongo_client['bot_db']
 image_collection = db['images']
 
 # Setup Gradio client
-gradio_client = Client(HUGGINGFACE_SPACE_URL.split('/')[-1], hf_token=HF_TOKEN)
+space_name = HUGGINGFACE_SPACE_URL.split('/')[-2] + '/' + HUGGINGFACE_SPACE_URL.split('/')[-1]
+gradio_client = Client(space_name, hf_token=HF_TOKEN)
 
 @app.post("/generate_image")
 async def generate_image_endpoint(request: Request):
