@@ -2,7 +2,7 @@
 
 import os
 from fastapi import FastAPI, Request
-from .config import HF_TOKEN, MONGO_URI, PORT
+from .config import HF_TOKEN, MONGO_URI, PORT, HUGGINGFACE_SPACE_URL
 from .database import connect_to_mongo, store_image
 from .gradio_handler import setup_gradio_client, generate_image
 
@@ -12,7 +12,7 @@ app = FastAPI()
 mongo_client = connect_to_mongo(MONGO_URI)
 
 # Fire up the image wizard
-gradio_client = setup_gradio_client("your-huggingface-space-name", HF_TOKEN)
+gradio_client = setup_gradio_client(HUGGINGFACE_SPACE_URL.split('/')[-1], HF_TOKEN)  # Use the name from the URL
 
 @app.post("/generate_image")
 async def generate_image_endpoint(request: Request):
