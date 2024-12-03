@@ -5,4 +5,5 @@ httpx==0.23.1
 pymongo==4.7.1
 python-dotenv==1.0.0
 loguru==0.7.0
-solana==0.25.0  # Assuming you're using Solana for NFT checks
+solana==0.25.0 
+gradio_client==0.2.1
