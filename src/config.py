@@ -1,7 +1,3 @@
-
-### `src/config.py`:
-
-```python
 # src/config.py
 
 import os
