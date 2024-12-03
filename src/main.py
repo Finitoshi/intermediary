@@ -2,9 +2,18 @@
 
 import os
 from fastapi import FastAPI, Request
-from config import HF_TOKEN, MONGO_URI, PORT, HUGGINGFACE_SPACE_URL
-from .database import connect_to_mongo, store_image
-from .gradio_handler import setup_gradio_client, generate_image
+from gradio_client import Client
+from pymongo import MongoClient
+from io import BytesIO
+import base64
+import datetime
+
+app = FastAPI()
+
+# Directly access environment variables
+HF_TOKEN = os.getenv("HF_TOKEN")
+MONGO_URI = os.getenv("MONGO_URI")
+PORT = int(os.getenv("PORT", 8000))  # Default to 8
 
 app = FastAPI()
 
