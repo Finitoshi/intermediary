@@ -35,6 +35,7 @@ image_collection = db['images']
 space_name = HUGGINGFACE_SPACE_URL.split('/')[-2] + '/' + HUGGINGFACE_SPACE_URL.split('/')[-1]
 gradio_client = Client(space_name, hf_token=HF_TOKEN)
 
+# Here's a little time tracker - because even AI needs performance reviews
 @contextmanager
 def log_time(message):
     start = datetime.datetime.now()
@@ -48,6 +49,7 @@ def log_time(message):
 @app.post("/generate_image")
 async def generate_image_endpoint(request: Request):
     try:
+        # Let's see what the user has in mind for our art project
         data = await request.json()
         prompt = data.get("prompt")
         if not prompt:
