@@ -15,5 +15,3 @@ MONGO_URI = os.getenv("MONGO_URI")
 CHIBI_TG_KEY_GROK = os.getenv("CHIBI_TG_KEY_GROK")
 PORT = int(os.getenv("PORT", 8000))  # Default to 8000 if you forgot to set it, because YOLO
 
-# Let's keep this URL in case we want to make this service chat with itself or something
-INTERMEDIARY_URL = RENDER_INTERMEDIARY_URL  # Use the Render URL for the intermediary
