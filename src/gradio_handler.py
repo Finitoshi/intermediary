@@ -1,6 +1,7 @@
 # src/gradio_handler.py
 
 from gradio_client import Client
+import os
 
 # Let's get the Gradio party started
 def setup_gradio_client(space_name, hf_token):
