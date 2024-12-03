@@ -11,7 +11,7 @@ import base64
 import datetime
 from contextlib import contextmanager
 
-# Configure logging - because if it's not logged, did it really happen?
+# Configure logging
 logging.basicConfig(
     level=logging.DEBUG, 
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -21,17 +21,17 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
-# Environment variables - 'cause we like to keep secrets secret
+# Environment variables
 HF_TOKEN = os.getenv("HF_TOKEN")
 MONGO_URI = os.getenv("MONGO_URI")
 HUGGINGFACE_SPACE_URL = os.getenv("HUGGINGFACE_SPACE_URL")
 
-# Connect to MongoDB - may the database be with you
+# Connect to MongoDB
 mongo_client = MongoClient(MONGO_URI)
 db = mongo_client['bot_db']
 image_collection = db['images']
 
-# Setup Gradio client - let's hope this AI isn't drawing with crayons
+# Setup Gradio client
 space_name = HUGGINGFACE_SPACE_URL.split('/')[-2] + '/' + HUGGINGFACE_SPACE_URL.split('/')[-1]
 gradio_client = Client(space_name, hf_token=HF_TOKEN)
 
@@ -57,13 +57,13 @@ async def generate_image_endpoint(request: Request):
         logger.info(f"Generating image with prompt: {prompt}")
         
         with log_time("Image generation process"):
-            # Generate image - let's hope AI got its art degree
+            # Generate image
             job = gradio_client.submit(prompt, api_name="/generate")
             while not job.done():
-                pass  # Wait for job to complete - patience is a virtue
+                pass  # Wait for job to complete
             result = job.result()
 
-        # Convert image to base64 for storage - because we love text more than binary in databases
+        # Convert image to base64 for storage
         if hasattr(result, 'save'):  # If result is an image that can be saved
             logger.debug("Converting image to base64")
             buffered = BytesIO()
@@ -76,7 +76,7 @@ async def generate_image_endpoint(request: Request):
             logger.error("Unexpected result format from Gradio")
             raise ValueError("Unexpected result format from Gradio")
 
-        # Store in MongoDB - because we want to remember our masterpieces
+        # Store in MongoDB
         with log_time("MongoDB insertion"):
             image_collection.insert_one({
                 "prompt": prompt,
@@ -84,7 +84,7 @@ async def generate_image_endpoint(request: Request):
                 "timestamp": datetime.datetime.utcnow()
             })
 
-        logger.info("Image successfully generated and stored. Art for the future!")
+        logger.info("Image successfully generated and stored.")
         return JSONResponse(content={"status": "success", "message": "Image generated and stored", "image": img_str}, status_code=200)
 
     except Exception as e:
@@ -93,6 +93,6 @@ async def generate_image_endpoint(request: Request):
 
 if __name__ == "__main__":
     import uvicorn
-    port = int(os.getenv("PORT", 8000))  # Default to 8000 if PORT is not set, 'cause we're flexible
+    port = int(os.getenv("PORT", 8000))  # Default to 8000 if PORT is not set
     logger.info(f"Starting server on port {port}. Let's see some art!")
     uvicorn.run(app, host="0.0.0.0", port=port)
