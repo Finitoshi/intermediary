@@ -2,7 +2,7 @@
 
 import os
 from fastapi import FastAPI, Request
-from .config import HF_TOKEN, MONGO_URI, PORT, HUGGINGFACE_SPACE_URL
+from config import HF_TOKEN, MONGO_URI, PORT, HUGGINGFACE_SPACE_URL
 from .database import connect_to_mongo, store_image
 from .gradio_handler import setup_gradio_client, generate_image
 
