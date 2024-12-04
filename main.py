@@ -36,6 +36,13 @@ app.add_middleware(
 HF_TOKEN = os.getenv("HF_TOKEN")
 MONGO_URI = os.getenv("MONGO_URI")
 HUGGINGFACE_SPACE_URL = os.getenv("HUGGINGFACE_SPACE_URL")
+HF_INTERMEDIARY_TOKEN = os.getenv("HF_INTERMEDIARY_TOKEN")
+
+# ... other code ...
+
+# Setup Gradio client
+space_name = HUGGINGFACE_SPACE_URL.split('/')[-2] + '/' + HUGGINGFACE_SPACE_URL.split('/')[-1]
+gradio_client = Client(space_name, hf_token=HF_INTERMEDIARY_TOKEN)
 
 # Log environment variable status
 logger.info(f"Environment variables loaded: HF_TOKEN={HF_TOKEN is not None}, MONGO_URI={MONGO_URI is not None}, HUGGINGFACE_SPACE_URL={HUGGINGFACE_SPACE_URL is not None}")
@@ -51,9 +58,9 @@ except Exception as e:
 db = mongo_client['bot_db']
 image_collection = db['images']
 
-# Setup Gradio client - let's hope this AI isn't drawing with crayons
+# Setup Gradio client
 space_name = HUGGINGFACE_SPACE_URL.split('/')[-2] + '/' + HUGGINGFACE_SPACE_URL.split('/')[-1]
-gradio_client = Client(space_name, hf_token=HF_TOKEN)
+gradio_client = Client(space_name, hf_token=HF_INTERMEDIARY_TOKEN)
 
 # Here's a little time tracker - because even AI needs performance reviews
 @contextmanager
