@@ -4,6 +4,7 @@ import os
 import logging
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware  # Added for CORS handling
 from gradio_client import Client
 from pymongo import MongoClient
 from io import BytesIO
@@ -20,6 +21,15 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
+
+# CORS middleware - to allow cross-origin requests
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # You might want to restrict this in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Environment variables - 'cause we like to keep secrets secret
 HF_TOKEN = os.getenv("HF_TOKEN")
